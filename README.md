@@ -47,6 +47,52 @@ This is your retention engine + data flywheel.
 
 ---
 
+## Build Instructions
+
+### Prerequisites
+
+- macOS 14.0+
+- Xcode 15.0+
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+
+### Setup
+
+1. Install XcodeGen:
+
+```bash
+brew install xcodegen
+```
+
+2. Generate the Xcode project:
+
+```bash
+cd Soon
+xcodegen generate
+```
+
+3. Open and run:
+
+```bash
+open Soon.xcodeproj
+```
+
+Then press `Cmd+R` to build and run. The app will appear in your menu bar with a clock icon.
+
+### Project Structure
+
+```
+Soon/
+├── Sources/
+│   ├── App/           # App entry point, menu bar setup
+│   ├── Models/        # SwiftData models, state machine
+│   ├── Services/      # SessionManager, notifications, overlays
+│   └── Views/         # SwiftUI views for each state
+├── Resources/         # Info.plist, entitlements
+└── project.yml        # XcodeGen configuration
+```
+
+---
+
 ## Future Ideas
 
 * Integrate with Obsidan daily notes.
