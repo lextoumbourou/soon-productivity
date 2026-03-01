@@ -71,7 +71,7 @@ Soon/
 ├── Resources/
 │   ├── Info.plist
 │   └── Soon.entitlements
-└── project.yml                    # XcodeGen config
+└── project.yml                    # XcodeGen config (inside Soon/)
 ```
 
 ### State Machine
@@ -90,7 +90,7 @@ Each state carries the associated session UUID. States defined in `SessionState.
 **FocusSession** (`FocusSession.swift`):
 - `id: UUID` - Unique identifier
 - `task: String` - What the user committed to
-- `delayMinutes: Int` - Time before start (5/10/20)
+- `delayMinutes: Int` - Time before start (0/5/10/20)
 - `durationMinutes: Int` - Focus duration (10/25/50)
 - `scheduledStart: Date` - When focus begins
 - `actualStart: Date?` - When it actually started
@@ -145,7 +145,7 @@ Shows a floating "Go time!" window when session starts:
 
 #### ScheduleFocusView (`ScheduleFocusView.swift`)
 - "In X minutes, I will work on:" prompt
-- Delay picker: 5/10/20 minutes (circular buttons)
+- Delay picker: 0/5/10/20 minutes (circular buttons) - includes "start now" option
 - Task text field
 - Duration picker: 10/25/50 minutes (capsule buttons)
 - "Lock it in" button (disabled if no task)
@@ -204,16 +204,19 @@ Uses **XcodeGen** (`project.yml`) to generate Xcode project:
 
 ## What's Missing for MVP
 
-Based on the README and plan.md, here's what remains:
+Based on code review, here's what remains:
 
 ### High Priority (Core UX)
 
-1. **Default values from settings aren't used**
-   - `ScheduleFocusView` hardcodes delay=10, duration=25
+1. **Default values from settings aren't used** ⚠️ STILL OPEN
+   - `ScheduleFocusView` hardcodes `selectedDelay = 10`, `selectedDuration = 25`
    - Should read from `@AppStorage("defaultDelay")` and `@AppStorage("defaultDuration")`
+   - Settings exist in `SettingsView.swift:6-7` but aren't wired to schedule view
 
-2. **Warning notification respects setting**
-   - `showWarningNotification` setting exists but isn't checked in `NotificationService`
+2. **Warning notification doesn't respect setting** ⚠️ STILL OPEN
+   - `showWarningNotification` setting exists in `SettingsView.swift:8`
+   - `NotificationService.scheduleSessionStart()` always schedules warning at line 19-38
+   - Should check `UserDefaults.standard.bool(forKey: "showWarningNotification")`
 
 3. **Session recovery edge cases**
    - App crashes during active session need testing
@@ -255,7 +258,7 @@ Based on the README and plan.md, here's what remains:
 ```
 DONE: Sprint 1 - Core Scheduling
 ├── Menu bar app
-├── Session scheduling (5/10/20 min delay)
+├── Session scheduling (0/5/10/20 min delay)
 ├── Timer with countdown states
 ├── Start overlay notification
 ├── Reflection flow
@@ -299,7 +302,7 @@ FUTURE: Advanced Features
 
 ```
 1. User clicks menu bar icon
-2. Enters task, selects delay (5/10/20 min) and duration (10/25/50 min)
+2. Enters task, selects delay (0/5/10/20 min) and duration (10/25/50 min)
 3. Clicks "Lock it in"
 4. Popover closes, icon changes to "scheduled"
 5. User enjoys guilt-free time ("You've got X:XX to chill")
@@ -325,18 +328,20 @@ FUTURE: Advanced Features
 
 ## Known Issues / Technical Debt
 
-1. **Duplicate ModelContainer creation** - Both `SoonApp.sharedModelContainer` and `AppDelegate.modelContainer` exist; should consolidate
+1. **Duplicate ModelContainer creation** - Both `SoonApp.sharedModelContainer` (line 8-19) and `AppDelegate.modelContainer` (line 41-48) exist; should consolidate to a single source
 
-2. **Timer resilience** - Uses basic `Timer.scheduledTimer`; could benefit from `DispatchSourceTimer` for better background behavior
+2. **Timer resilience** - Uses basic `Timer.scheduledTimer` in `SessionManager.swift:117`; could benefit from `DispatchSourceTimer` for better background behavior
 
 3. **Entitlements empty** - `Soon.entitlements` is an empty dict; will need entries for:
-   - Network Extension
-   - App Sandbox (if App Store)
+   - Network Extension (Sprint 2)
+   - App Sandbox (if App Store distribution)
    - Hardened runtime exceptions
 
-4. **No error handling UI** - SwiftData operations use `try?` silently
+4. **No error handling UI** - SwiftData operations use `try?` silently throughout `SessionManager.swift`
 
-5. **Preview providers** - Some use inline closures that could be cleaner
+5. **Settings-to-view wiring incomplete** - Default delay/duration settings exist but `ScheduleFocusView` doesn't read them
+
+6. **Delay options mismatch** - `ScheduleFocusView` offers [0, 5, 10, 20] but `SettingsView` offers [5, 10, 20, 30] for defaults
 
 ---
 
@@ -344,19 +349,27 @@ FUTURE: Advanced Features
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `SoonApp.swift` | 113 | App entry, AppDelegate, menu bar setup |
+| `SoonApp.swift` | 127 | App entry, AppDelegate, menu bar setup |
 | `FocusSession.swift` | 96 | SwiftData model, SessionStatus, Reflection enums |
 | `SessionState.swift` | 46 | State machine enum |
-| `SessionManager.swift` | 252 | Core business logic |
+| `SessionManager.swift` | 266 | Core business logic |
 | `NotificationService.swift` | 107 | Notification scheduling |
 | `OverlayWindowController.swift` | 107 | Start overlay window |
 | `MenuBarView.swift` | 89 | Main container view |
-| `ScheduleFocusView.swift` | 158 | Session scheduling UI |
+| `ScheduleFocusView.swift` | 159 | Session scheduling UI |
 | `ScheduledView.swift` | 104 | Countdown view |
 | `ActiveSessionView.swift` | 132 | Active session UI |
 | `ReflectionView.swift` | 109 | Post-session reflection |
 | `HistoryView.swift` | 170 | Session history + stats |
 | `SettingsView.swift` | 88 | App preferences |
-| `project.yml` | 33 | XcodeGen configuration |
+| `project.yml` | 33 | XcodeGen configuration (Soon/project.yml) |
 
-**Total implementation**: ~1,604 lines of Swift code
+**Total implementation**: ~1,600 lines of Swift code
+
+---
+
+## Recent Changes (Last Updated: 2026-03-01)
+
+- Added `0` minute delay option ("start now") to `ScheduleFocusView`
+- Menu bar now shows timer in title during scheduled/active states
+- Minor stability fixes for focus removal edge cases

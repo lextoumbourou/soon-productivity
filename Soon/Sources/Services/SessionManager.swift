@@ -223,7 +223,13 @@ class SessionManager: ObservableObject {
     private func updateMenuBarTitle(_ interval: TimeInterval) {
         let totalSeconds = max(0, Int(interval))
         let formatted = String(format: "%d:%02d", totalSeconds / 60, totalSeconds % 60)
-        onUpdateMenuBarTitle?(formatted)
+
+        if let task = currentSession?.task {
+            let truncated = task.count > 20 ? String(task.prefix(17)) + "..." : task
+            onUpdateMenuBarTitle?("\(formatted) · \(truncated)")
+        } else {
+            onUpdateMenuBarTitle?(formatted)
+        }
     }
 
     // MARK: - History
