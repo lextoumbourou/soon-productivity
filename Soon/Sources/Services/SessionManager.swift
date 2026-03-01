@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Combine
+import AppKit
 
 @MainActor
 class SessionManager: ObservableObject {
@@ -164,8 +165,10 @@ class SessionManager: ObservableObject {
     // MARK: - State Recovery
 
     private func checkForActiveSession() {
+        let scheduled = SessionStatus.scheduled
+        let active = SessionStatus.active
         let descriptor = FetchDescriptor<FocusSession>(
-            predicate: #Predicate { $0.status == .scheduled || $0.status == .active },
+            predicate: #Predicate { $0.status == scheduled || $0.status == active },
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
 
@@ -212,8 +215,10 @@ class SessionManager: ObservableObject {
     // MARK: - History
 
     func fetchSessionHistory() -> [FocusSession] {
+        let completed = SessionStatus.completed
+        let skipped = SessionStatus.skipped
         let descriptor = FetchDescriptor<FocusSession>(
-            predicate: #Predicate { $0.status == .completed || $0.status == .skipped },
+            predicate: #Predicate { $0.status == completed || $0.status == skipped },
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
 
@@ -223,11 +228,13 @@ class SessionManager: ObservableObject {
     func sessionsThisWeek() -> [FocusSession] {
         let calendar = Calendar.current
         let startOfWeek = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
+        let completed = SessionStatus.completed
+        let skipped = SessionStatus.skipped
 
         let descriptor = FetchDescriptor<FocusSession>(
             predicate: #Predicate { session in
                 session.createdAt >= startOfWeek &&
-                (session.status == .completed || session.status == .skipped)
+                (session.status == completed || session.status == skipped)
             },
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )

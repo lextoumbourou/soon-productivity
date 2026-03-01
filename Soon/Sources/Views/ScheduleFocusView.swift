@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct ScheduleFocusView: View {
     @EnvironmentObject var sessionManager: SessionManager

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct ReflectionView: View {
     @EnvironmentObject var sessionManager: SessionManager
