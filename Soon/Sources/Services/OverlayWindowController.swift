@@ -16,37 +16,37 @@ class OverlayWindowController {
     }
 
     private func createAndShowOverlay(task: String) {
-        // Close any existing overlay
         dismissOverlay()
 
-        // Create window
-        let window = NSWindow(
+        // NSPanel with .nonactivatingPanel so it never steals focus or key window status
+        let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 300),
-            styleMask: [.borderless],
+            styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
 
-        window.isOpaque = false
-        window.backgroundColor = .clear
-        window.level = .floating
-        window.center()
-        window.isMovableByWindowBackground = true
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.level = .floating
+        panel.center()
+        panel.isMovableByWindowBackground = true
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        // Create SwiftUI content
         let overlayView = StartOverlayView(task: task) { [weak self] in
-            self?.dismissOverlay()
+            DispatchQueue.main.async {
+                self?.dismissOverlay()
+            }
         }
 
-        window.contentView = NSHostingView(rootView: overlayView)
+        panel.contentView = NSHostingView(rootView: overlayView)
+        overlayWindow = panel
+        panel.orderFrontRegardless()
 
-        overlayWindow = window
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-
-        // Auto-dismiss after 8 seconds
         dismissTimer = Timer.scheduledTimer(withTimeInterval: 8.0, repeats: false) { [weak self] _ in
-            self?.dismissOverlay()
+            DispatchQueue.main.async {
+                self?.dismissOverlay()
+            }
         }
     }
 
