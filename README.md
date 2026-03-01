@@ -1,18 +1,47 @@
 # Soon Productivity App
 
-This is a well-integrated native OSX app to help combate productivity and focus you.
+Soon is a productivity app, designed as a time-tracker and motivational coach in one.
 
-It's based on George Ainsle's principles of future reward discounting:
+Designed to totally eliminate procrastination while you're at your computer.
 
-> Humans systematically undervalue future rewards compared to immediate rewards, and the closer a reward gets to the present, the more its subjective value spikes.
+The idea is to explicity decide on what you're going to use your computer for, and for how long. All other functionality it locked.
 
-The idea is that you want to do something that requires focus, like working for 30 minutes, or studying, but all you want to do now is scroll TikTok or play games. So you set a focus time for 5 minutes in the future, for how long and you can even say what you want to do.
+Unlock apps and websites as needed, but explain to your future self why you're doing it. Include browser use details
+
+Syncs perfectly with Obsidian, OpenClaw (or any of the claws), or self-contained.
+
+Totally offline and secure by default. Integrates with all your favorite AI providers.
+
+Elegant MacOSX native (2026) design.
+
+## How It Works
+
+Soon Productivity Icon lives in the OSX status bar.
+
+Think offline RescueTime with an AI-first design.
+
+Set your intention for now, or for later.
+
+Soon will start tracking your time against that intention.
+
+Have fun now, but schedule tasks in the future - make your productivity about future you.
+
+No cloud required. Log computer activity and sync to markdown files - Obsidian-vault friendly. Data is stored in a single SQlite table.
 
 ## MVP
 
-1. One-field capture:
+Click on status menu bar and it shows a screen similar to RescueTime.
+
+Choose to Focus Now | Focus Later
+
+See your list of to tasks.
+
+Select the task and Start Focus Session.
+
+--- Old README below. Need to decide what to do with it. ---
 
 Hotkey or menu bar:
+
 > “In 10 minutes, I will work on: ______”
 
 > Presets: 5 / 10 / 20 (plus maybe “Custom” later)
@@ -97,3 +126,7 @@ Soon/
 
 * Integrate with Obsidan daily notes.
 * Capture what you did in the study break to assess how productive the user was.
+
+## Development Goals
+
+Aim for at least one-iteration on this per day. Use it, and try to describe how I can make it better.

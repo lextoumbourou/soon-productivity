@@ -12,59 +12,60 @@ struct ScheduleFocusView: View {
     private let durationOptions = [10, 25, 50]
 
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Main prompt
+                    VStack(spacing: 8) {
+                        Text("In")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
 
-            // Main prompt
-            VStack(spacing: 8) {
-                Text("In")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
+                        // Delay picker
+                        HStack(spacing: 12) {
+                            ForEach(delayOptions, id: \.self) { delay in
+                                DelayButton(
+                                    minutes: delay,
+                                    isSelected: selectedDelay == delay
+                                ) {
+                                    selectedDelay = delay
+                                }
+                            }
+                        }
 
-                // Delay picker
-                HStack(spacing: 12) {
-                    ForEach(delayOptions, id: \.self) { delay in
-                        DelayButton(
-                            minutes: delay,
-                            isSelected: selectedDelay == delay
-                        ) {
-                            selectedDelay = delay
+                        Text("I will work on:")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 20)
+
+                    // Task input
+                    TextField("What's the task?", text: $task)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.title3)
+                        .padding(.horizontal)
+
+                    // Duration
+                    VStack(spacing: 8) {
+                        Text("For")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        HStack(spacing: 8) {
+                            ForEach(durationOptions, id: \.self) { duration in
+                                DurationButton(
+                                    minutes: duration,
+                                    isSelected: selectedDuration == duration
+                                ) {
+                                    selectedDuration = duration
+                                }
+                            }
                         }
                     }
                 }
-
-                Text("I will work on:")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
             }
 
-            // Task input
-            TextField("What's the task?", text: $task)
-                .textFieldStyle(.roundedBorder)
-                .font(.title3)
-                .padding(.horizontal)
-
-            // Duration
-            VStack(spacing: 8) {
-                Text("For")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                HStack(spacing: 8) {
-                    ForEach(durationOptions, id: \.self) { duration in
-                        DurationButton(
-                            minutes: duration,
-                            isSelected: selectedDuration == duration
-                        ) {
-                            selectedDuration = duration
-                        }
-                    }
-                }
-            }
-
-            Spacer()
-
-            // Lock it in button
+            // Lock it in button - fixed at bottom
             Button {
                 scheduleSession()
             } label: {

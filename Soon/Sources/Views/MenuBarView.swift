@@ -67,7 +67,7 @@ struct MenuBarView: View {
             .padding(.vertical, 8)
             .background(Color(nsColor: .windowBackgroundColor))
         }
-        .frame(width: 320, height: 400)
+        .frame(width: 320, height: 480)
     }
 
     @ViewBuilder
