@@ -49,6 +49,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Initialize session manager
         sessionManager = SessionManager(modelContainer: modelContainer!)
+        
+        // Set up callbacks for menu bar updates
+        sessionManager?.onUpdateMenuBarIcon = { [weak self] state in
+            self?.updateMenuBarIcon(for: state)
+        }
+        sessionManager?.onUpdateMenuBarTitle = { [weak self] title in
+            self?.updateMenuBarTitle(title)
+        }
 
         // Set up menu bar
         setupMenuBar()
@@ -62,6 +70,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "clock", accessibilityDescription: "Soon")
+            button.imagePosition = .imageLeading
             button.action = #selector(togglePopover)
             button.target = self
         }
@@ -109,5 +118,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: "Soon")
+    }
+
+    func updateMenuBarTitle(_ title: String) {
+        guard let button = statusItem?.button else { return }
+        button.title = title.isEmpty ? "" : " \(title)"
     }
 }

@@ -14,6 +14,10 @@ class SessionManager: ObservableObject {
     private var modelContainer: ModelContainer
     private var timer: Timer?
     private var countdownThreshold: TimeInterval = 30 // seconds before start to show countdown
+    
+    // Callbacks for updating menu bar
+    var onUpdateMenuBarIcon: ((SessionState) -> Void)?
+    var onUpdateMenuBarTitle: ((String) -> Void)?
 
     init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer
@@ -46,8 +50,8 @@ class SessionManager: ObservableObject {
         // Start timer
         startTimer()
 
-        // Update menu bar icon
         updateMenuBarIcon()
+        updateMenuBarTitle(timeUntilStart)
     }
 
     func cancelSession() {
@@ -73,6 +77,7 @@ class SessionManager: ObservableObject {
         OverlayWindowController.shared.showStartOverlay(task: session.task)
 
         updateMenuBarIcon()
+        updateMenuBarTitle(timeRemaining)
     }
 
     func endSession() {
@@ -81,6 +86,7 @@ class SessionManager: ObservableObject {
         state = .reflection(session: session.id)
         stopTimer()
         updateMenuBarIcon()
+        onUpdateMenuBarTitle?("")
     }
 
     func completeSession(with reflection: Reflection) {
@@ -127,6 +133,7 @@ class SessionManager: ObservableObject {
         case .scheduled, .countdown:
             timeUntilStart = session.timeUntilStart
             updateGuiltFreeMessage()
+            updateMenuBarTitle(timeUntilStart)
 
             if timeUntilStart <= 0 {
                 // Time to start!
@@ -139,6 +146,7 @@ class SessionManager: ObservableObject {
 
         case .active:
             timeRemaining = session.timeRemaining
+            updateMenuBarTitle(timeRemaining)
 
             if timeRemaining <= 0 {
                 endSession()
@@ -205,11 +213,17 @@ class SessionManager: ObservableObject {
         timeRemaining = 0
         guiltFreeMessage = ""
         updateMenuBarIcon()
+        onUpdateMenuBarTitle?("")
     }
 
     private func updateMenuBarIcon() {
-        guard let appDelegate = NSApp.delegate as? AppDelegate else { return }
-        appDelegate.updateMenuBarIcon(for: state)
+        onUpdateMenuBarIcon?(state)
+    }
+
+    private func updateMenuBarTitle(_ interval: TimeInterval) {
+        let totalSeconds = max(0, Int(interval))
+        let formatted = String(format: "%d:%02d", totalSeconds / 60, totalSeconds % 60)
+        onUpdateMenuBarTitle?(formatted)
     }
 
     // MARK: - History
