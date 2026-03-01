@@ -8,7 +8,7 @@ struct ScheduleFocusView: View {
     @State private var selectedDelay: Int = 10
     @State private var selectedDuration: Int = 25
 
-    private let delayOptions = [5, 10, 20]
+    private let delayOptions = [0, 5, 10, 20]
     private let durationOptions = [10, 25, 50]
 
     var body: some View {
