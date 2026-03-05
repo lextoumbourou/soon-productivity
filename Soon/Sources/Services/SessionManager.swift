@@ -31,8 +31,12 @@ class SessionManager: ObservableObject {
     // MARK: - Session Lifecycle
 
     func scheduleSession(task: String, delayMinutes: Int, durationMinutes: Int) {
+        scheduleSession(tasks: [task], delayMinutes: delayMinutes, durationMinutes: durationMinutes)
+    }
+
+    func scheduleSession(tasks: [String], delayMinutes: Int, durationMinutes: Int) {
         let session = FocusSession(
-            task: task,
+            tasks: tasks,
             delayMinutes: delayMinutes,
             durationMinutes: durationMinutes
         )
@@ -73,8 +77,8 @@ class SessionManager: ObservableObject {
         state = .active(session: session.id)
         timeRemaining = session.timeRemaining
 
-        // Show start overlay
-        OverlayWindowController.shared.showStartOverlay(task: session.task)
+        // Show start overlay with first task
+        OverlayWindowController.shared.showStartOverlay(task: session.currentTask?.title ?? session.task)
 
         updateMenuBarIcon()
         updateMenuBarTitle(timeRemaining)
@@ -224,11 +228,43 @@ class SessionManager: ObservableObject {
         let totalSeconds = max(0, Int(interval))
         let formatted = String(format: "%d:%02d", totalSeconds / 60, totalSeconds % 60)
 
-        if let task = currentSession?.task {
-            let truncated = task.count > 20 ? String(task.prefix(17)) + "..." : task
+        guard let session = currentSession else {
+            onUpdateMenuBarTitle?(formatted)
+            return
+        }
+
+        let total = session.totalCount
+        let completed = session.completedCount
+
+        if total > 1 {
+            // Multiple tasks: show current task + progress
+            if let current = session.currentTask {
+                let truncated = current.title.count > 15 ? String(current.title.prefix(12)) + "..." : current.title
+                onUpdateMenuBarTitle?("\(formatted) · \(truncated) (\(completed)/\(total))")
+            } else {
+                // All done
+                onUpdateMenuBarTitle?("\(formatted) · Done! (\(total)/\(total))")
+            }
+        } else if let task = session.currentTask {
+            // Single task: original behavior
+            let truncated = task.title.count > 20 ? String(task.title.prefix(17)) + "..." : task.title
             onUpdateMenuBarTitle?("\(formatted) · \(truncated)")
         } else {
             onUpdateMenuBarTitle?(formatted)
+        }
+    }
+
+    // MARK: - Task Management
+
+    func toggleTask(_ taskId: UUID) {
+        guard let session = currentSession else { return }
+        session.toggleTask(taskId)
+        try? modelContext.save()
+        objectWillChange.send()
+
+        // Update menu bar to reflect new current task
+        if state.isActive {
+            updateMenuBarTitle(timeRemaining)
         }
     }
 

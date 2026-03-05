@@ -7,7 +7,6 @@
 ## Backlog
 
 ### Task Management
-- [ ] **Allow users to create a full todo list** - Add multi-task support in the scheduling UI
 - [ ] **Support input from Markdown checklist** - Parse `- [ ] task` format for bulk task import
 
 ### Integrations
@@ -28,6 +27,7 @@
 ## Completed
 
 - [x] **Show task title** - Display the current task in menu bar during focus sessions → [plan](plans/001-show-task-title.md)
+- [x] **Allow users to create a full todo list** - Multi-task support with checkable items → [plan](plans/002-full-todo-list.md)
 
 ---
 

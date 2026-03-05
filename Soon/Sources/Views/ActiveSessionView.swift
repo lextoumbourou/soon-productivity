@@ -55,19 +55,19 @@ struct ActiveSessionView: View {
                 .frame(width: 60, height: 60)
             }
 
-            // Task
+            // Task list
             if let session = sessionManager.currentSession {
-                VStack(spacing: 4) {
-                    Text("Working on:")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-
-                    Text(session.task)
-                        .font(.title3)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                VStack(spacing: 8) {
+                    ForEach(session.tasks) { task in
+                        TaskCheckRow(
+                            task: task,
+                            isCurrent: session.currentTask?.id == task.id
+                        ) {
+                            sessionManager.toggleTask(task.id)
+                        }
+                    }
                 }
+                .padding(.horizontal)
             }
 
             Spacer()
@@ -101,6 +101,34 @@ struct ActiveSessionView: View {
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+}
+
+struct TaskCheckRow: View {
+    let task: TaskItem
+    let isCurrent: Bool
+    let onToggle: () -> Void
+
+    var body: some View {
+        Button(action: onToggle) {
+            HStack(spacing: 10) {
+                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(task.isCompleted ? .green : (isCurrent ? .orange : .secondary))
+                    .font(.system(size: 18))
+
+                Text(task.title)
+                    .font(.subheadline)
+                    .strikethrough(task.isCompleted)
+                    .foregroundStyle(task.isCompleted ? .secondary : (isCurrent ? .primary : .primary))
+
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(isCurrent && !task.isCompleted ? Color.orange.opacity(0.1) : Color.clear)
+            .cornerRadius(8)
+        }
+        .buttonStyle(.plain)
     }
 }
 

@@ -4,12 +4,17 @@ import SwiftData
 struct ScheduleFocusView: View {
     @EnvironmentObject var sessionManager: SessionManager
 
-    @State private var task: String = ""
+    @State private var tasks: [String] = [""]
     @State private var selectedDelay: Int = 10
     @State private var selectedDuration: Int = 25
+    @FocusState private var focusedTaskIndex: Int?
 
     private let delayOptions = [0, 5, 10, 20]
     private let durationOptions = [10, 25, 50]
+
+    private var validTasks: [String] {
+        tasks.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,11 +44,56 @@ struct ScheduleFocusView: View {
                     }
                     .padding(.top, 20)
 
-                    // Task input
-                    TextField("What's the task?", text: $task)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.title3)
-                        .padding(.horizontal)
+                    // Task list input
+                    VStack(spacing: 8) {
+                        ForEach(tasks.indices, id: \.self) { index in
+                            HStack(spacing: 8) {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(.tertiary)
+                                    .font(.system(size: 14))
+
+                                TextField("Task \(index + 1)", text: $tasks[index])
+                                    .textFieldStyle(.plain)
+                                    .focused($focusedTaskIndex, equals: index)
+                                    .onSubmit {
+                                        if !tasks[index].trimmingCharacters(in: .whitespaces).isEmpty {
+                                            addTask()
+                                            focusedTaskIndex = tasks.count - 1
+                                        }
+                                    }
+
+                                if tasks.count > 1 {
+                                    Button {
+                                        removeTask(at: index)
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color(nsColor: .controlBackgroundColor))
+                            .cornerRadius(8)
+                        }
+
+                        // Add task button
+                        Button {
+                            addTask()
+                            focusedTaskIndex = tasks.count - 1
+                        } label: {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                Text("Add task")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 4)
+                    }
+                    .padding(.horizontal)
 
                     // Duration
                     VStack(spacing: 8) {
@@ -79,18 +129,28 @@ struct ScheduleFocusView: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.orange)
-            .disabled(task.trimmingCharacters(in: .whitespaces).isEmpty)
+            .disabled(validTasks.isEmpty)
             .padding(.horizontal)
             .padding(.bottom)
         }
     }
 
+    private func addTask() {
+        tasks.append("")
+    }
+
+    private func removeTask(at index: Int) {
+        tasks.remove(at: index)
+        if tasks.isEmpty {
+            tasks = [""]
+        }
+    }
+
     private func scheduleSession() {
-        let trimmedTask = task.trimmingCharacters(in: .whitespaces)
-        guard !trimmedTask.isEmpty else { return }
+        guard !validTasks.isEmpty else { return }
 
         sessionManager.scheduleSession(
-            task: trimmedTask,
+            tasks: validTasks,
             delayMinutes: selectedDelay,
             durationMinutes: selectedDuration
         )

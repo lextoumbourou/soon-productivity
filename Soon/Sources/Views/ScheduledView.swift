@@ -41,18 +41,25 @@ struct ScheduledView: View {
                 }
             }
 
-            // Task
+            // Task list preview
             if let session = sessionManager.currentSession {
-                VStack(spacing: 4) {
+                VStack(spacing: 6) {
                     Text("Working on:")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
 
-                    Text(session.task)
-                        .font(.title3)
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(session.tasks) { task in
+                            HStack(spacing: 8) {
+                                Image(systemName: "circle")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.tertiary)
+                                Text(task.title)
+                                    .font(.subheadline)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
                 }
             }
 
